@@ -14,6 +14,7 @@ class GenerateBackgroundRequest(BaseModel):
     product_image_url: HttpUrl = Field(
         ...,
         description="URL of the product image. The image must have a transparent background and the largest dimension must not exceed 1024 pixels. The transparent areas will be replaced with the generated background.",
+        example="https://example.com/product.png",
     )
     prompt: str = Field(
         ...,
@@ -61,7 +62,7 @@ class ErrorResponse(BaseModel):
                 "source": """
 import requests
 
-url = "https://api.presti.ai/generate_background"
+url = "https://sdk.presti.ai/generate_background"
 headers = {
     "Authorization": "Bearer your_api_key_here",
     "Content-Type": "application/json"
@@ -80,7 +81,7 @@ print(result["image"])
             {
                 "lang": "JavaScript",
                 "source": """
-const response = await fetch('https://api.presti.ai/generate_background', {
+const response = await fetch('https://sdk.presti.ai/generate_background', {
     method: 'POST',
     headers: {
         'Authorization': 'Bearer your_api_key_here',
@@ -100,7 +101,7 @@ console.log(result.image);
             {
                 "lang": "cURL",
                 "source": """
-curl -X POST 'https://api.presti.ai/generate_background' \\
+curl -X POST 'https://sdk.presti.ai/generate_background' \\
     -H 'Authorization: Bearer your_api_key_here' \\
     -H 'Content-Type: application/json' \\
     -d '{

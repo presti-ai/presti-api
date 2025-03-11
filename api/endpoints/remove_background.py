@@ -51,7 +51,7 @@ class ErrorResponse(BaseModel):
                 "source": """
 import requests
 
-url = "https://api.presti.ai/remove_background"
+url = "https://sdk.presti.ai/remove_background"
 headers = {
     "Authorization": "Bearer your_api_key_here",
     "Content-Type": "application/json"
@@ -69,7 +69,7 @@ print(result["image"])
             {
                 "lang": "JavaScript",
                 "source": """
-const response = await fetch('https://api.presti.ai/remove_background', {
+const response = await fetch('https://sdk.presti.ai/remove_background', {
     method: 'POST',
     headers: {
         'Authorization': 'Bearer your_api_key_here',
@@ -88,7 +88,7 @@ console.log(result.image);
             {
                 "lang": "cURL",
                 "source": """
-curl -X POST 'https://api.presti.ai/remove_background' \\
+curl -X POST 'https://sdk.presti.ai/remove_background' \\
     -H 'Authorization: Bearer your_api_key_here' \\
     -H 'Content-Type: 'application/json' \\
     -d '{

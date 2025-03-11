@@ -27,7 +27,7 @@ class SwapColorRequest(BaseModel):
         ...,
         description="The target color in hexadecimal format (e.g., #FF0000 for red).",
         example="#FF0000",
-        regex=r"^#[0-9A-Fa-f]{6}$",
+        pattern=r"^#[0-9A-Fa-f]{6}$",
     )
 
 
@@ -70,7 +70,7 @@ class ErrorResponse(BaseModel):
                 "source": """
 import requests
 
-url = "https://api.presti.ai/swap_color"
+url = "https://sdk.presti.ai/swap_color"
 headers = {
     "Authorization": "Bearer your_api_key_here",
     "Content-Type": "application/json"
@@ -90,7 +90,7 @@ print(result["image"])
             {
                 "lang": "JavaScript",
                 "source": """
-const response = await fetch('https://api.presti.ai/swap_color', {
+const response = await fetch('https://sdk.presti.ai/swap_color', {
     method: 'POST',
     headers: {
         'Authorization': 'Bearer your_api_key_here',
@@ -111,7 +111,7 @@ console.log(result.image);
             {
                 "lang": "cURL",
                 "source": """
-curl -X POST 'https://api.presti.ai/swap_color' \\
+curl -X POST 'https://sdk.presti.ai/swap_color' \\
     -H 'Authorization: Bearer your_api_key_here' \\
     -H 'Content-Type: 'application/json' \\
     -d '{

@@ -61,7 +61,7 @@ class ErrorResponse(BaseModel):
                 "source": """
 import requests
 
-url = "https://api.presti.ai/inpaint"
+url = "https://sdk.presti.ai/inpaint"
 headers = {
     "Authorization": "Bearer your_api_key_here",
     "Content-Type": "application/json"
@@ -81,7 +81,7 @@ print(result["image"])
             {
                 "lang": "JavaScript",
                 "source": """
-const response = await fetch('https://api.presti.ai/inpaint', {
+const response = await fetch('https://sdk.presti.ai/inpaint', {
     method: 'POST',
     headers: {
         'Authorization': 'Bearer your_api_key_here',
@@ -102,7 +102,7 @@ console.log(result.image);
             {
                 "lang": "cURL",
                 "source": """
-curl -X POST 'https://api.presti.ai/inpaint' \\
+curl -X POST 'https://sdk.presti.ai/inpaint' \\
     -H 'Authorization: Bearer your_api_key_here' \\
     -H 'Content-Type: 'application/json' \\
     -d '{

@@ -15,7 +15,7 @@ A FastAPI-based REST API for Presti AI services, including image outpainting and
 1. Create a virtual environment:
 
 ```bash
-python -m .venv venv
+python -m venv .venv
 source .venv/bin/activate  # On Windows: .\venv\Scripts\activate
 ```
 
@@ -35,7 +35,6 @@ The API will be available at http://localhost:8080
 
 ## API Documentation
 
-- Swagger UI: http://localhost:8080/docs
 - ReDoc: http://localhost:8080/redoc
 
 ## Docker
@@ -57,15 +56,15 @@ docker run -p 8080:8080 presti-ai-api
 1. Build and push the container:
 
 ```bash
-gcloud builds submit --tag gcr.io/YOUR_PROJECT_ID/presti-ai-api
+gcloud builds submit --tag gcr.io/YOUR_PROJECT_ID/presti-sdk
 ```
 
 2. Deploy to Cloud Run:
 
 ```bash
 gcloud run deploy presti-ai-api \
-  --image gcr.io/YOUR_PROJECT_ID/presti-ai-api \
+  --image gcr.io/YOUR_PROJECT_ID/presti-sdk \
   --platform managed \
-  --region YOUR_REGION \
+  --region europe-west1 \
   --allow-unauthenticated
 ```
