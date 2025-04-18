@@ -5,6 +5,9 @@ A FastAPI-based REST API for Presti AI services, including image outpainting and
 ## Features
 
 - FastAPI-based REST API
+- PostgreSQL database support
+- SQLAlchemy ORM
+- Alembic for database migrations
 - Automatic API documentation (Swagger UI and ReDoc)
 - Docker support
 - Google Cloud Run ready
@@ -36,6 +39,44 @@ The API will be available at http://localhost:8080
 ## API Documentation
 
 - ReDoc: http://localhost:8080/redoc
+
+## Alembic Migrations
+
+1. Create a new migration:
+
+```bash
+alembic revision --autogenerate -m "migration_name"
+```
+
+2. Apply the migration:
+
+```bash
+alembic upgrade head
+```
+
+3. Downgrade the migration:
+
+```bash
+alembic downgrade -1
+```
+
+4. Show the current migration:
+
+```bash
+alembic current
+```
+
+5. Show the history of migrations:
+
+```bash
+alembic history
+```
+
+6. Show the status of migrations:
+
+```bash
+alembic status
+```
 
 ## Docker
 

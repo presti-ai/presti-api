@@ -1,15 +1,10 @@
-from functools import lru_cache
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.endpoints import (
-    generate_background,
-    remove_background,
-    erase_object,
-    inpaint,
-    swap_color,
-)
-from schemas.models import HealthResponse
+from api.deps.auth import get_user
+from api.endpoints.v1.router import api_router_v1
+
+from api.endpoints.healthcheck.route import router as healthcheck_router
 
 description = """
 ### Description
@@ -59,14 +54,6 @@ app.add_middleware(
 )
 
 
-# Include all routers with appropriate tags
-app.include_router(generate_background.router)
-app.include_router(remove_background.router)
-app.include_router(erase_object.router)
-app.include_router(inpaint.router)
-app.include_router(swap_color.router)
-
-
-@app.get("/healthcheck", response_model=HealthResponse)
-async def health():
-    return HealthResponse(status="ok")
+# Healthcheck endpoint
+app.include_router(healthcheck_router)
+app.include_router(api_router_v1, prefix="/v1", dependencies=[Depends(get_user)])

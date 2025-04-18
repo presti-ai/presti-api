@@ -1,11 +1,5 @@
-from fastapi import APIRouter, HTTPException, Depends
-from fastapi.security.api_key import APIKeyHeader
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, HttpUrl, Field
-from typing import Optional
-import os
-
-# API key configuration
-api_key_header = APIKeyHeader(name="Authorization", auto_error=False)
 
 router = APIRouter()
 
