@@ -1,4 +1,7 @@
+from functools import lru_cache
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 from api.endpoints import (
     generate_background,
     remove_background,
@@ -6,6 +9,7 @@ from api.endpoints import (
     inpaint,
     swap_color,
 )
+from schemas.models import HealthResponse
 
 description = """
 ### Description
@@ -44,9 +48,25 @@ app = FastAPI(
     },
 )
 
+origins = ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
 # Include all routers with appropriate tags
 app.include_router(generate_background.router)
 app.include_router(remove_background.router)
 app.include_router(erase_object.router)
 app.include_router(inpaint.router)
 app.include_router(swap_color.router)
+
+
+@app.get("/healthcheck", response_model=HealthResponse)
+async def health():
+    return HealthResponse(status="ok")
