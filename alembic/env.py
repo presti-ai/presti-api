@@ -7,6 +7,7 @@ from alembic import context
 import os
 from dotenv import load_dotenv
 from api.models.user_models import User
+from api.models.generation_models import Generation
 
 from sqlmodel import SQLModel
 

@@ -5,8 +5,11 @@ import os
 import time
 import uuid
 from fastapi import APIRouter, Depends, HTTPException
-
+from sqlalchemy.orm import Session
+from api.models.generation_models import Generation
+from api.services.generation_service import create_generation
 from api.utils.runpod import call_runpod_endpoint
+from database.connection import get_db
 from .helpers import get_payload_for_model
 from api.utils.constants import OUTPAINT_MODELS_URL
 import api.utils.image as image_utils
@@ -103,7 +106,8 @@ curl -X POST 'https://sdk.presti.ai/generate_background' \\
     },
 )
 async def generate_background(
-    request: GenerateBackgroundRequest, user: User = Depends(get_user)
+    request: GenerateBackgroundRequest,
+    user: User = Depends(get_user),
 ):
     """
     Generate a background scene for a product image.
@@ -180,10 +184,6 @@ async def generate_background(
 
     # Call the RunPod endpoint
     generation_image = call_runpod_endpoint(outpaint_model_url, payload)
-    generation_output = {
-        "seed": seed,
-        "model": request.model,
-    }
 
     # Crop the generated image to the original resolution and re-paste the packshot
     generation_image = image_utils.crop_image(
@@ -199,18 +199,32 @@ async def generate_background(
     now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     file_path = f"api/{user.id}/hd/{now}_{uuid.uuid4()}.png"
     output_url = storage_utils.upload_image_pil(generation_image, file_path)
-    generation_output["output_url"] = output_url
 
     result = {
-        "generation_output": generation_output,
+        "output_url": output_url,
         "final_prompt": final_prompt,
         "original_prompt": request.prompt,
         "generation_width": authorized_width,
         "generation_height": authorized_height,
+        "seed": seed,
+        "model": request.model,
         "execution_time_ms": int((time.time() - t0) * 1000),
     }
     print(result)
-    # TODO: Store or log the 'result' dictionary if needed
+
+    # Save the generation to the database
+    generation = Generation(
+        author_id=user.id,
+        output_url=output_url,
+        final_prompt=final_prompt,
+        original_prompt=request.prompt,
+        generation_width=authorized_width,
+        generation_height=authorized_height,
+        seed=seed,
+        model=request.model,
+        execution_time_ms=int((time.time() - t0) * 1000),
+    )
+    generation = create_generation(generation)
 
     # Convert final image to base64 for the response
     final_base64_image = image_utils.image_to_base64_string(generation_image)

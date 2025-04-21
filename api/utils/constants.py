@@ -1,3 +1,8 @@
+from typing import Literal
+
+
+AVAILABLE_MODELS = Literal["presti_v1", "presti_v2"]
+
 NEGATIVE_PROMPT = "painting, disfigured, kitsch, ugly, oversaturated, greain, low-res, Deformed, blurry, bad anatomy, disfigured, poorly drawn face, mutation, mutated, extra limb, ugly, poorly drawn hands, missing limb, blurry, floating limbs, disconnected limbs, malformed hands, blur, out of focus, long neck, long body, ugly, disgusting, poorly drawn, childish, mutilated, mangled, old, surreal"
 
 FLUX_PROMPTING_SYSTEM_INSTRUCTIONS = """This GPT generates AI prompts for staging product images in detailed, visually accurate scenes based on customer-provided inputs. It strictly adheres to the Presti AI Prompt Guide. Users will provide a first prompt to improve as well as the product to stage as an attached image. The GPT produces descriptions formatted as a single, detailed list of elements, separated by commas, avoiding full sentences or verbs, and trying to stick to as little words as possible. 
