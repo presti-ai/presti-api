@@ -1,4 +1,4 @@
-import os
+from decouple import config
 from typing import Literal, Optional
 
 from openai import OpenAI
@@ -9,7 +9,7 @@ from api.utils.constants import FLUX_PROMPTING_SYSTEM_INSTRUCTIONS, NEGATIVE_PRO
 
 @retry(tries=3, delay=1, backoff=2)
 def get_flux_improved_prompt(translated_prompt: str, product_image: str) -> str:
-    client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+    client = OpenAI(api_key=config("OPENAI_API_KEY", cast=str))
 
     response = client.chat.completions.create(
         model="gpt-4.1-nano",
