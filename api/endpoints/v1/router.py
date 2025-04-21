@@ -1,7 +1,6 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 
-from api.deps.auth import get_user
-from .generate_background import router as generate_background_router
+from .generate_background.route import router as generate_background_router
 from .remove_background import router as remove_background_router
 from .erase_object import router as erase_object_router
 from .inpaint import router as inpaint_router
