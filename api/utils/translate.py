@@ -1,3 +1,4 @@
+from decouple import config
 from pydantic import BaseModel
 from openai import OpenAI
 from langdetect import detect
@@ -21,7 +22,7 @@ def translate_prompt_if_needed(prompt: str) -> Tuple[str, str]:
     if prompt_language == "en":
         return prompt, prompt_language
 
-    client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+    client = OpenAI(api_key=config("OPENAI_API_KEY", cast=str))
     chat_completion = client.beta.chat.completions.parse(
         messages=[
             {
