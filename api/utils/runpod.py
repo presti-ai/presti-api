@@ -1,8 +1,9 @@
 import os
 from typing import List, Union
-import aiohttp
 
+import requests
 from PIL import Image
+from retry import retry
 
 from api.utils.image import base64_string_to_image
 
@@ -17,10 +18,11 @@ def extract_base64_content(base64_string: str, output_format: str) -> str:
     )
 
 
-async def call_runpod_endpoint_async(
+@retry(tries=3, delay=1, backoff=2)
+def call_runpod_endpoint(
     url: str, payload: dict, output_format: str = "png"
 ) -> Union[Image.Image, List[Image.Image]]:
-    """Asynchronously call a RunPod endpoint and process the image response.
+    """Call a RunPod endpoint and process the image response.
 
     Args:
         url: The RunPod endpoint URL
@@ -31,7 +33,7 @@ async def call_runpod_endpoint_async(
         A single image or list of images depending on the response
 
     Raises:
-        aiohttp.ClientResponseError: If the API request fails
+        requests.exceptions.HTTPError: If the API request fails
         ValueError: If the response cannot be parsed or processed
     """
     headers = {
@@ -39,13 +41,10 @@ async def call_runpod_endpoint_async(
         "Content-Type": "application/json",
     }
 
-    print("Calling RunPod endpoint...")
-    async with aiohttp.ClientSession() as session:
-        async with session.post(url, json=payload, headers=headers) as response:
-            response.raise_for_status()  # Raises ClientResponseError for bad responses
-            response_json = await response.json()
-            print("RunPod endpoint response:")
+    response = requests.post(url, json=payload, headers=headers)
+    response.raise_for_status()  # Raises HTTPError for bad responses
 
+    response_json = response.json()
     outputs = (
         [response_json["output"]]
         if isinstance(response_json["output"], str)

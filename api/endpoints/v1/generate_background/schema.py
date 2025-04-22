@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field, model_validator
 class GenerateBackgroundRequest(BaseModel):
     product_image: str = Field(
         ...,
-        description="Base64 encoded image of the product. The image must have a transparent background and the largest dimension must not exceed 1024 pixels. The transparent areas will be replaced with the generated background.",
+        description="Base64 encoded image of the product.",
         example="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
     )
     prompt: str = Field(

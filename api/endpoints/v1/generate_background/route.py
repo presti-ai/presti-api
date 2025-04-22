@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from api.models.generation_models import Generation
 from api.services.generation_service import create_generation
-from api.utils.runpod import call_runpod_endpoint_async  # Assuming async version
+from api.utils.runpod import call_runpod_endpoint  # Assuming async version
 from database.connection import get_db
 from .helpers import get_payload_for_model, postprocess, preprocess
 from api.utils.constants import ALLOWED_DIMENSIONS, OUTPAINT_MODELS_URL
@@ -165,10 +165,14 @@ async def generate_background(
     outpaint_model_url = OUTPAINT_MODELS_URL[request.model]
 
     # Run upload and RunPod call concurrently
-    packshot_upload_task = storage_utils.upload_image_pil_async(
-        packshot_image, packshot_image_path
+    packshot_upload_task = asyncio.create_task(
+        asyncio.to_thread(
+            storage_utils.upload_image_pil, packshot_image, packshot_image_path
+        )
     )
-    runpod_call_task = call_runpod_endpoint_async(outpaint_model_url, payload)
+    runpod_call_task = asyncio.create_task(
+        asyncio.to_thread(call_runpod_endpoint, outpaint_model_url, payload)
+    )
 
     packshot_output_url, generation_image = await asyncio.gather(
         packshot_upload_task, runpod_call_task
