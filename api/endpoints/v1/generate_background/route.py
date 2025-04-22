@@ -214,7 +214,7 @@ async def generate_background(
 
     # Save the generation to the database
     generation = Generation(
-        author_id=user.id,
+        user_id=user.id,
         output_url=output_url,
         final_prompt=final_prompt,
         original_prompt=request.prompt,

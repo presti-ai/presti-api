@@ -75,22 +75,6 @@ def get_payload_for_model(
                 "seed": seed,
                 "width": width,
                 "height": height,
-            }
-        }
-        # if model in OUTPAINTING_MODEL_PARAMETERS:
-        #     payload["input"].update(OUTPAINTING_MODEL_PARAMETERS[model])
-
-    elif model in FLUX_ASSISTED_PROMPT_MODELS:
-        final_prompt = f"{translated_prompt}, high resolution, professional photography"
-        payload = {
-            "input": {
-                "prompt": final_prompt,
-                "image": base64_string,
-                "num_outputs": 1,
-                "nb_steps": 30,
-                "seed": seed,
-                "width": width,
-                "height": height,
                 "true_guidance_scale": 2.5,
             }
         }

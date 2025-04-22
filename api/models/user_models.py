@@ -8,3 +8,5 @@ class User(SQLModel, table=True):
     name: str
     api_key: str = Field(unique=True, index=True)
     is_active: bool = Field(default=True)
+
+    __tablename__ = "users"
