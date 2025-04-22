@@ -1,3 +1,10 @@
+import os
+from fastapi import HTTPException
+
+from api.endpoints.v1.generate_background.schema import GenerateBackgroundRequest
+import api.utils.image as image_utils
+import api.utils.translate as translate_utils
+from PIL import Image
 from decouple import config
 from typing import Literal, Optional
 
@@ -84,3 +91,58 @@ def get_payload_for_model(
         )
 
     return payload, final_prompt
+
+
+def preprocess(
+    request: GenerateBackgroundRequest,
+    packshot_image: Image.Image,
+    width: int,
+    height: int,
+) -> tuple[dict, str, str]:
+    # Prepare the control image
+    control_image = Image.new("RGBA", (width, height))
+    alpha_channel = packshot_image.split()[3]
+    if request.model == "presti_v2":
+        # For Flux models, we convert to a binary mask to avoid the appearance of an edge, it is very visible on
+        # low-res packshots (https://presti-ai.slack.com/archives/C077N5HF9BP/p1738139806501099)
+        alpha_channel = alpha_channel.point(lambda x: 255 if x >= 128 else 0)
+
+    control_image.paste(
+        im=packshot_image,
+        mask=alpha_channel,
+    )
+
+    base64_string = image_utils.image_to_base64_string(control_image)
+
+    # Use translate_prompt_if_needed function
+    translated_prompt, _ = translate_utils.translate_prompt_if_needed(request.prompt)
+
+    seed = int.from_bytes(os.urandom(2), "big")
+
+    # Prepare payload for each model type
+    payload, final_prompt = get_payload_for_model(
+        model=request.model,
+        translated_prompt=translated_prompt,
+        base64_string=base64_string,
+        enhance_prompt=request.enhance_prompt,
+        seed=seed,
+        width=width,
+        height=height,
+    )
+    return payload, final_prompt, seed
+
+
+def postprocess(
+    image: Image.Image, packshot_image: Image.Image, width: int, height: int
+):
+    # Crop the generated image to the original resolution and re-paste the packshot
+    generation_image = image_utils.crop_image(
+        image=image,
+        original_width=width,
+        original_height=height,
+    )
+    generation_image.paste(
+        im=packshot_image,
+        mask=packshot_image,
+    )
+    return generation_image

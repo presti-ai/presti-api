@@ -4,14 +4,15 @@ from io import BytesIO
 import os
 import time
 import uuid
+import asyncio  # Import asyncio
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from api.models.generation_models import Generation
 from api.services.generation_service import create_generation
-from api.utils.runpod import call_runpod_endpoint
+from api.utils.runpod import call_runpod_endpoint_async  # Assuming async version
 from database.connection import get_db
-from .helpers import get_payload_for_model
-from api.utils.constants import OUTPAINT_MODELS_URL
+from .helpers import get_payload_for_model, postprocess, preprocess
+from api.utils.constants import ALLOWED_DIMENSIONS, OUTPAINT_MODELS_URL
 import api.utils.image as image_utils
 import api.utils.translate as translate_utils
 from .schema import ErrorResponse, GenerateBackgroundRequest, GenerateBackgroundResponse
@@ -115,7 +116,12 @@ async def generate_background(
     The input image must meet the following requirements:
     - Product must be on a transparent background
     - The transparent areas will be filled with the generated scene
-    - Largest dimension must not exceed 1024 pixels
+    - Dimensions must be one of the accepted formats:
+        - 1024x1024 (1:1)
+        - 1280x720 (16:9) or 720x1280 (9:16)
+        - 768x920 (4:5) or 920x768 (5:4)
+        - 1152x768 (3:2) or 768x1152 (2:3)
+        - Multiples of these dimensions (x2, x4, x8) are also accepted.
 
     The function will generate a background based on the prompt and compose
     the product image over it.
@@ -136,97 +142,63 @@ async def generate_background(
             detail=f"Invalid base64 image data: {e}",
         )
 
-    authorized_width = 1024
-    authorized_height = 1024
+    image_width, image_height = packshot_image.size
 
-    # Check if the image is exactly 1024x1024
-    if (
-        packshot_image.size[0] != authorized_width
-        or packshot_image.size[1] != authorized_height
-    ):
+    # Check if the image dimensions are allowed
+    if (image_width, image_height) not in ALLOWED_DIMENSIONS:
+        allowed_dims_str = ", ".join(
+            [f"{w}x{h}" for w, h in sorted(list(ALLOWED_DIMENSIONS))]
+        )
         raise HTTPException(
             status_code=400,
-            detail="The image must be exactly 1024x1024 pixels.",
+            detail=f"Invalid image dimensions ({image_width}x{image_height}). Accepted dimensions are: {allowed_dims_str}.",
         )
 
-    # Prepare the control image
-    control_image = Image.new("RGBA", (authorized_width, authorized_height))
-    alpha_channel = packshot_image.split()[3]
-    if request.model == "presti_v2":
-        # For Flux models, we convert to a binary mask to avoid the appearance of an edge, it is very visible on
-        # low-res packshots (https://presti-ai.slack.com/archives/C077N5HF9BP/p1738139806501099)
-        alpha_channel = alpha_channel.point(lambda x: 255 if x >= 128 else 0)
-
-    control_image.paste(
-        im=packshot_image,
-        mask=alpha_channel,
+    # Pre-process
+    payload, final_prompt, seed = preprocess(
+        request, packshot_image, image_width, image_height
     )
 
-    base64_string = image_utils.image_to_base64_string(control_image)
-
-    # Use translate_prompt_if_needed function
-    translated_prompt, _ = translate_utils.translate_prompt_if_needed(request.prompt)
-
+    # Prepare paths and URLs
+    now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+    packshot_image_path = f"api/{user.id}/hd/packshot-{now}_{uuid.uuid4()}.png"
     outpaint_model_url = OUTPAINT_MODELS_URL[request.model]
 
-    seed = int.from_bytes(os.urandom(2), "big")
+    # Run upload and RunPod call concurrently
+    packshot_upload_task = storage_utils.upload_image_pil_async(
+        packshot_image, packshot_image_path
+    )
+    runpod_call_task = call_runpod_endpoint_async(outpaint_model_url, payload)
 
-    # Prepare payload for each model type
-    payload, final_prompt = get_payload_for_model(
-        model=request.model,
-        translated_prompt=translated_prompt,
-        base64_string=base64_string,
-        enhance_prompt=request.enhance_prompt,
-        seed=seed,
-        width=authorized_width,
-        height=authorized_height,
+    packshot_output_url, generation_image = await asyncio.gather(
+        packshot_upload_task, runpod_call_task
     )
 
-    # Call the RunPod endpoint
-    generation_image = call_runpod_endpoint(outpaint_model_url, payload)
-
-    # Crop the generated image to the original resolution and re-paste the packshot
-    generation_image = image_utils.crop_image(
-        image=generation_image,
-        original_width=authorized_width,
-        original_height=authorized_height,
-    )
-    generation_image.paste(
-        im=packshot_image,
-        mask=packshot_image,
+    # Post-process the image
+    processed_generation_image = postprocess(
+        generation_image, packshot_image, image_width, image_height
     )
 
-    now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     file_path = f"api/{user.id}/hd/{now}_{uuid.uuid4()}.png"
-    output_url = storage_utils.upload_image_pil(generation_image, file_path)
-
-    result = {
-        "output_url": output_url,
-        "final_prompt": final_prompt,
-        "original_prompt": request.prompt,
-        "generation_width": authorized_width,
-        "generation_height": authorized_height,
-        "seed": seed,
-        "model": request.model,
-        "execution_time_ms": int((time.time() - t0) * 1000),
-    }
-    print(result)
+    output_url = storage_utils.upload_image_pil(processed_generation_image, file_path)
 
     # Save the generation to the database
     generation = Generation(
         user_id=user.id,
         output_url=output_url,
+        packshot_url=packshot_output_url,
         final_prompt=final_prompt,
         original_prompt=request.prompt,
-        generation_width=authorized_width,
-        generation_height=authorized_height,
+        generation_width=image_width,
+        generation_height=image_height,
         seed=seed,
         model=request.model,
         execution_time_ms=int((time.time() - t0) * 1000),
     )
+    print(generation.model_dump_json())
     generation = create_generation(generation)
 
     # Convert final image to base64 for the response
-    final_base64_image = image_utils.image_to_base64_string(generation_image)
+    final_base64_image = image_utils.image_to_base64_string(processed_generation_image)
 
     return GenerateBackgroundResponse(image=final_base64_image)

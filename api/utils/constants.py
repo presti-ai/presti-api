@@ -3,6 +3,22 @@ from typing import Literal
 
 AVAILABLE_MODELS = Literal["presti_v1", "presti_v2"]
 
+BASE_DIMENSIONS = [
+    (1024, 1024),  # 1:1
+    (1280, 720),  # 16:9
+    (720, 1280),  # 9:16
+    (768, 920),  # 4:5
+    (920, 768),  # 5:4
+    (1152, 768),  # 3:2
+    (768, 1152),  # 2:3
+]
+MULTIPLIERS = [1, 2, 4, 8]
+
+ALLOWED_DIMENSIONS = set()
+for base_w, base_h in BASE_DIMENSIONS:
+    for multiplier in MULTIPLIERS:
+        ALLOWED_DIMENSIONS.add((base_w * multiplier, base_h * multiplier))
+
 NEGATIVE_PROMPT = "painting, disfigured, kitsch, ugly, oversaturated, greain, low-res, Deformed, blurry, bad anatomy, disfigured, poorly drawn face, mutation, mutated, extra limb, ugly, poorly drawn hands, missing limb, blurry, floating limbs, disconnected limbs, malformed hands, blur, out of focus, long neck, long body, ugly, disgusting, poorly drawn, childish, mutilated, mangled, old, surreal"
 
 FLUX_PROMPTING_SYSTEM_INSTRUCTIONS = """This GPT generates AI prompts for staging product images in detailed, visually accurate scenes based on customer-provided inputs. It strictly adheres to the Presti AI Prompt Guide. Users will provide a first prompt to improve as well as the product to stage as an attached image. The GPT produces descriptions formatted as a single, detailed list of elements, separated by commas, avoiding full sentences or verbs, and trying to stick to as little words as possible. 
