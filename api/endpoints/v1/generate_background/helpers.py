@@ -53,7 +53,7 @@ def get_payload_for_model(
     height: Optional[int],
 ) -> tuple[dict, str]:
     if model == "presti_v1":
-        # SDXM Model
+        # SDXL Model
         final_prompt = f"{translated_prompt}, high resolution, professional photography"
         payload = {
             "input": {
@@ -85,10 +85,6 @@ def get_payload_for_model(
                 "true_guidance_scale": 2.5,
             }
         }
-    else:
-        raise HTTPException(
-            status_code=400, detail="Invalid model or model not implemented"
-        )
 
     return payload, final_prompt
 

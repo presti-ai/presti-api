@@ -1,6 +1,7 @@
 import os
 from typing import List, Union
 
+from decouple import config
 import requests
 from PIL import Image
 from retry import retry
@@ -37,7 +38,7 @@ def call_runpod_endpoint(
         ValueError: If the response cannot be parsed or processed
     """
     headers = {
-        "Authorization": f"Bearer {os.environ['RUNPOD_API_KEY']}",
+        "Authorization": f"Bearer {config('RUNPOD_API_KEY', cast=str)}",
         "Content-Type": "application/json",
     }
 
