@@ -90,9 +90,7 @@ curl -X POST 'https://sdk.presti.ai/remove_background' \\
         ]
     },
 )
-def remove_background_route(
-    request: RemoveBackgroundRequest, user: User = Depends(get_user)
-):
+def remove_background(request: RemoveBackgroundRequest, user: User = Depends(get_user)):
     """
     Remove the background from an image, isolating the main subject.
 

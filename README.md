@@ -83,13 +83,13 @@ alembic status
 Build the image:
 
 ```bash
-docker build -t presti-ai-api .
+docker build -t presti-sdk .
 ```
 
 Run the container:
 
 ```bash
-docker run -p 8080:8080 presti-ai-api
+docker run -p 8080:8080 presti-sdk
 ```
 
 ## Deployment to Google Cloud Run
@@ -103,7 +103,7 @@ gcloud builds submit --tag gcr.io/YOUR_PROJECT_ID/presti-sdk
 2. Deploy to Cloud Run:
 
 ```bash
-gcloud run deploy presti-ai-api \
+gcloud run deploy presti-sdk \
   --image gcr.io/YOUR_PROJECT_ID/presti-sdk \
   --platform managed \
   --region europe-west1 \
