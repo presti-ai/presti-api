@@ -57,7 +57,7 @@ headers = {
     "Content-Type": "application/json"
 }
 payload = {
-    "product_image_url": "https://example.com/product.png",
+    "product_image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
     "prompt": "luxury living room with modern furniture, warm lighting, and a view of the city skyline at sunset"
 }
 
@@ -77,7 +77,7 @@ const response = await fetch('https://sdk.presti.ai/generate_background', {
         'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-        product_image_url: 'https://example.com/product.png',
+        product_image: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
         prompt: 'luxury living room with modern furniture, warm lighting, and a view of the city skyline at sunset'
     })
 });
@@ -94,7 +94,7 @@ curl -X POST 'https://sdk.presti.ai/generate_background' \\
     -H 'Authorization: Bearer your_api_key_here' \\
     -H 'Content-Type: application/json' \\
     -d '{
-        "product_image_url": "https://example.com/product.png",
+        "product_image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
         "prompt": "luxury living room with modern furniture, warm lighting, and a view of the city skyline at sunset"
     }'
 """,
@@ -118,6 +118,10 @@ async def generate_background(
         - 768x920 (4:5) or 920x768 (5:4)
         - 1152x768 (3:2) or 768x1152 (2:3)
         - Multiples of these dimensions (x2, x4, x8) are also accepted.
+
+    Important note: If you plan to upscale the image, make sure to upload an image that is at least
+    as large as the desired output size. For example, if you want to upscale the image to 2048x2048,
+    make sure to upload an image that is at least 2048x2048.
 
     The function will generate a background based on the prompt and compose
     the product image over it.

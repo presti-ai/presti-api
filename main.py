@@ -10,18 +10,20 @@ description = """
 ### Description
 This API provides the Presti AI services. These services are used to generate, edit, and enhance images on the Presti app.
 
-The services that are or will be available are:
+The services that are ALREADY available are:
 - Background Generation (/generate_background)
 - Background Removal (/remove_background)
-- Object Eraser (Magic Eraser) (/erase_object)
-- Image Inpainting (Magic Replace & Accessorisation) (/inpaint)
-- Color Swap (/swap_color)
-- Image Relight (docs TBD)
-- Product Replace (docs TBD)
-- Image Upscaler (docs TBD)
-- Image to Video (docs TBD)
 
-You can find illustrations of these services in the [Presti app tutorials (click here)](https://presti-ai.notion.site/Presti-AI-Video-Tutorials-FAQ-b7837fa31a8f4760ae9d910a9bf87491).
+The services that can be developed upon request are:
+- Image Upscaler
+- Object Eraser (Magic Eraser)
+- Image Inpainting (Magic Replace & Accessorisation)
+- Color Swap
+- Image Relight
+- Product Replace
+- Image to Video
+
+You can find illustrations of these services in the [Presti app tutorials (click here)](https://presti-ai.notion.site/2-Video-Tutorials-1c080e96f63d80a3a0bae99c97320716).
 
 The API is currently in beta and subject to change.
 
@@ -54,6 +56,5 @@ app.add_middleware(
 )
 
 
-# Healthcheck endpoint
-app.include_router(healthcheck_router)
 app.include_router(api_router_v1, prefix="/v1", dependencies=[Depends(get_user)])
+app.include_router(healthcheck_router)
