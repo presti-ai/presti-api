@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from .generate_background.route import router as generate_background_router
-from .remove_background import router as remove_background_router
+from .remove_background.route import router as remove_background_router
 from .erase_object import router as erase_object_router
 from .inpaint import router as inpaint_router
 from .swap_color import router as swap_color_router

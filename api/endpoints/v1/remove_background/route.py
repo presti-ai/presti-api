@@ -1,27 +1,18 @@
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, HttpUrl, Field
+import base64
+import io
+import time
+from PIL import Image, UnidentifiedImageError
+from fastapi import APIRouter, Depends, HTTPException
+
+from api.deps.auth import get_user
+from api.models.bg_removal_models import BackgroundRemoval
+from api.models.user_models import User
+from api.services.bg_removal_service import create_bg_removal
+import api.utils.image as image_utils
+from api.endpoints.v1.remove_background.helpers import remove_background
+from .schema import RemoveBackgroundRequest, RemoveBackgroundResponse, ErrorResponse
 
 router = APIRouter()
-
-
-class RemoveBackgroundRequest(BaseModel):
-    image_url: HttpUrl = Field(
-        ...,
-        description="URL of the image from which to remove the background. The image will be processed to separate the main subject from its background.",
-        example="https://example.com/product.jpg",
-    )
-
-
-class RemoveBackgroundResponse(BaseModel):
-    image: str = Field(
-        ...,
-        description="The processed image with background removed, in base64 format. The image will have a transparent background.",
-        example="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
-    )
-
-
-class ErrorResponse(BaseModel):
-    detail: str
 
 
 @router.post(
@@ -99,7 +90,9 @@ curl -X POST 'https://sdk.presti.ai/remove_background' \\
         ]
     },
 )
-async def remove_background(request: RemoveBackgroundRequest):
+def remove_background_route(
+    request: RemoveBackgroundRequest, user: User = Depends(get_user)
+):
     """
     Remove the background from an image, isolating the main subject.
 
@@ -109,10 +102,31 @@ async def remove_background(request: RemoveBackgroundRequest):
     3. Remove the background
     4. Return the result with a transparent background
     """
+    t0 = time.time()
+    # Decode the base64 string
+    if request.image.startswith("data:image"):
+        base64_image_data = request.image.split(",")[1]
+    else:
+        base64_image_data = request.image
+
     try:
-        # TODO: Implement actual background removal logic
-        return RemoveBackgroundResponse(
-            image="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+        image_data = base64.b64decode(base64_image_data)
+        input_image = Image.open(io.BytesIO(image_data))
+    except (base64.binascii.Error, UnidentifiedImageError) as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid base64 image data: {e}",
         )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+
+    result = remove_background(input_image)
+
+    # Convert the result image to base64
+    base64_image = image_utils.image_to_base64_string(result)
+
+    db_obj = BackgroundRemoval(
+        user_id=user.id,
+        execution_time_ms=int((time.time() - t0) * 1000),
+    )
+    create_bg_removal(db_obj)
+
+    return RemoveBackgroundResponse(image=base64_image)

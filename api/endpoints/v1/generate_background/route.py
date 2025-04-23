@@ -1,20 +1,16 @@
 import base64
 import datetime
 from io import BytesIO
-import os
 import time
 import uuid
-import asyncio  # Import asyncio
+import asyncio
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
 from api.models.generation_models import Generation
 from api.services.generation_service import create_generation
-from api.utils.runpod import call_runpod_endpoint  # Assuming async version
-from database.connection import get_db
-from .helpers import get_payload_for_model, postprocess, preprocess
+from api.utils.runpod import call_runpod_endpoint
+from .helpers import postprocess, preprocess
 from api.utils.constants import ALLOWED_DIMENSIONS, OUTPAINT_MODELS_URL
 import api.utils.image as image_utils
-import api.utils.translate as translate_utils
 from .schema import ErrorResponse, GenerateBackgroundRequest, GenerateBackgroundResponse
 from PIL import Image, UnidentifiedImageError
 from api.deps.auth import get_user
@@ -199,7 +195,6 @@ async def generate_background(
         model=request.model,
         execution_time_ms=int((time.time() - t0) * 1000),
     )
-    print(generation.model_dump_json())
     generation = create_generation(generation)
 
     # Convert final image to base64 for the response

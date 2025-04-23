@@ -8,6 +8,7 @@ import os
 from dotenv import load_dotenv
 from api.models.user_models import User
 from api.models.generation_models import Generation
+from api.models.bg_removal_models import BackgroundRemoval
 
 from sqlmodel import SQLModel
 
