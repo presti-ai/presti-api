@@ -1,6 +1,9 @@
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
+
+from fastapi.exceptions import RequestValidationError
 from api.deps.auth import get_user
 from api.endpoints.v1.router import api_router_v1
 
@@ -44,6 +47,25 @@ app = FastAPI(
         "email": "support@presti.ai",
     },
 )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    simple_errors = []
+    errors = exc.errors()
+    for error in errors:
+        loc = error.get("loc")
+        msg = error.get("msg")
+        if loc and msg:
+            field = loc[-1] if isinstance(loc[-1], str) else "unknown"
+            simple_errors.append(f"{field}: {msg}")
+    return JSONResponse(
+        status_code=422,
+        content={
+            "detail": simple_errors,
+        },
+    )
+
 
 origins = ["*"]
 

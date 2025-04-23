@@ -4,12 +4,12 @@ from pydantic import BaseModel, Field, model_validator
 
 class GenerateBackgroundRequest(BaseModel):
     product_image: str = Field(
-        ...,
+        min_length=1,
         description="Base64 encoded image of the product.",
         example="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
     )
     prompt: str = Field(
-        ...,
+        min_length=1,
         description="Text description of the desired background scene. Be specific about the environment, style, lighting, and mood you want to create around your product.",
         example="luxury living room with modern furniture, warm lighting, and a view of the city skyline at sunset",
     )
