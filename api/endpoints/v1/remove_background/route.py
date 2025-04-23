@@ -9,7 +9,7 @@ from api.models.bg_removal_models import BackgroundRemoval
 from api.models.user_models import User
 from api.services.bg_removal_service import create_bg_removal
 import api.utils.image as image_utils
-from api.endpoints.v1.remove_background.helpers import remove_background
+from .helpers import remove_background_helper
 from .schema import RemoveBackgroundRequest, RemoveBackgroundResponse, ErrorResponse
 
 router = APIRouter()
@@ -116,7 +116,7 @@ def remove_background(request: RemoveBackgroundRequest, user: User = Depends(get
             detail=f"Invalid base64 image data: {e}",
         )
 
-    result = remove_background(input_image)
+    result = remove_background_helper(input_image)
 
     # Convert the result image to base64
     base64_image = image_utils.image_to_base64_string(result)

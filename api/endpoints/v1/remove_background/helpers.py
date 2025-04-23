@@ -8,7 +8,7 @@ from retry import retry
 
 
 @retry(tries=3, delay=1, backoff=2)
-def remove_background(input_image: Image.Image) -> Image.Image:
+def remove_background_helper(input_image: Image.Image) -> Image.Image:
     # Define multipart boundary
     boundary = "----------{}".format(uuid.uuid4().hex)
 
