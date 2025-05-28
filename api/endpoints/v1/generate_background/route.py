@@ -46,14 +46,10 @@ router = APIRouter()
                 "lang": "Python",
                 "source": """
 import requests
-import time
-import uuid
-import datetime
-from fastapi import Depends
 
-url = "https://sdk.presti.ai/generate_background"
+url = "https://sdk.presti.ai/v1/generate_background"
 headers = {
-    "Authorization": "Bearer your_api_key_here",
+    "X-PRESTI-API-KEY": "your_api_key_here",
     "Content-Type": "application/json"
 }
 payload = {
@@ -70,10 +66,10 @@ print(result["image"])
             {
                 "lang": "JavaScript",
                 "source": """
-const response = await fetch('https://sdk.presti.ai/generate_background', {
+const response = await fetch('https://sdk.presti.ai/v1/generate_background', {
     method: 'POST',
     headers: {
-        'Authorization': 'Bearer your_api_key_here',
+        'X-PRESTI-API-KEY': 'your_api_key_here',
         'Content-Type': 'application/json'
     },
     body: JSON.stringify({
@@ -90,8 +86,8 @@ console.log(result.image);
             {
                 "lang": "cURL",
                 "source": """
-curl -X POST 'https://sdk.presti.ai/generate_background' \\
-    -H 'Authorization: Bearer your_api_key_here' \\
+curl -X POST 'https://sdk.presti.ai/v1/generate_background' \\
+    -H 'X-PRESTI-API-KEY: your_api_key_here' \\
     -H 'Content-Type: application/json' \\
     -d '{
         "product_image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",

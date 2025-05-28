@@ -42,13 +42,13 @@ router = APIRouter()
                 "source": """
 import requests
 
-url = "https://sdk.presti.ai/remove_background"
+url = "https://sdk.presti.ai/v1/remove_background"
 headers = {
-    "Authorization": "Bearer your_api_key_here",
+    "X-PRESTI-API-KEY": "your_api_key_here",
     "Content-Type": "application/json"
 }
 payload = {
-    "image_url": "https://example.com/product.jpg"
+    "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
 }
 
 response = requests.post(url, json=payload, headers=headers)
@@ -60,14 +60,14 @@ print(result["image"])
             {
                 "lang": "JavaScript",
                 "source": """
-const response = await fetch('https://sdk.presti.ai/remove_background', {
+    const response = await fetch('https://sdk.presti.ai/v1/remove_background', {
     method: 'POST',
     headers: {
-        'Authorization': 'Bearer your_api_key_here',
+        'X-PRESTI-API-KEY': 'your_api_key_here',
         'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-        image_url: 'https://example.com/product.jpg'
+        image: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
     })
 });
 
@@ -79,11 +79,11 @@ console.log(result.image);
             {
                 "lang": "cURL",
                 "source": """
-curl -X POST 'https://sdk.presti.ai/remove_background' \\
-    -H 'Authorization: Bearer your_api_key_here' \\
+curl -X POST 'https://sdk.presti.ai/v1/remove_background' \\
+    -H 'X-PRESTI-API-KEY: your_api_key_here' \\
     -H 'Content-Type: 'application/json' \\
     -d '{
-        "image_url": "https://example.com/product.jpg"
+        "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
     }'
 """,
             },
