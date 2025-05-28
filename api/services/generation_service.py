@@ -8,6 +8,10 @@ def create_generation(generation: Generation, db: Session = next(get_db())):
     Create a new generation record in the database.
     """
     db.add(generation)
-    db.commit()
+    try:
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise e
     db.refresh(generation)
     return generation

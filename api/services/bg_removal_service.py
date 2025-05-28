@@ -8,6 +8,10 @@ def create_bg_removal(removal: BackgroundRemoval, db: Session = next(get_db())):
     Create a new background removal record in the database.
     """
     db.add(removal)
-    db.commit()
-    db.refresh(removal)
+    try:
+        db.commit()
+        db.refresh(removal)
+    except Exception as e:
+        db.rollback()
+        raise e
     return removal
