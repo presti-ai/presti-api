@@ -1,7 +1,7 @@
 from typing import Literal
 
 
-AVAILABLE_MODELS = Literal["presti_v1", "presti_v2"]
+AVAILABLE_MODELS = Literal["presti_v1", "presti_v2", "presti_v3"]
 
 BASE_DIMENSIONS = [
     (1024, 1024),  # 1:1
@@ -61,8 +61,10 @@ The output consists strictly of a visually rich, comma-separated list of element
 
 OUTPAINT_SDXL_RUNPOD_API_URL = "https://api.runpod.ai/v2/6w17g20tvehm01/runsync"
 OUTPAINT_FLUX_V2_RUNPOD_API_URL = "https://api.runpod.ai/v2/d3tt1mqxwjydba/runsync"
+OUTPAINT_FLUX_V5_RUNPOD_API_URL = "https://api.runpod.ai/v2/g0nuvioyb32l8r/runsync"
 
 OUTPAINT_MODELS_URL = {
     "presti_v1": OUTPAINT_SDXL_RUNPOD_API_URL,
     "presti_v2": OUTPAINT_FLUX_V2_RUNPOD_API_URL,
+    "presti_v3": OUTPAINT_FLUX_V5_RUNPOD_API_URL,
 }
