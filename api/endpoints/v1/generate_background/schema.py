@@ -15,20 +15,20 @@ class GenerateBackgroundRequest(BaseModel):
     )
     enhance_prompt: bool = Field(
         default=True,
-        description="Whether to enhance the prompt with additional details for better image generation. Only applicable for 'presti_v2' model.",
+        description="Whether to enhance the prompt with additional details for better image generation. Only applicable for 'presti_v2' and 'presti_v3' models.",
         example=True,
     )
-    model: Literal["presti_v2", "presti_v1"] = Field(
-        default="presti_v2",
-        description="The model to use for image generation. Options include 'presti_v2', 'presti_v1'.",
-        example="presti_v2",
+    model: Literal["presti_v3", "presti_v2", "presti_v1"] = Field(
+        default="presti_v3",
+        description="The model to use for image generation. Options include 'presti_v3', 'presti_v2', 'presti_v1'.",
+        example="presti_v3",
     )
 
     @model_validator(mode="after")
     def check_enhance_prompt_with_model(self) -> "GenerateBackgroundRequest":
         if self.model == "presti_v1" and self.enhance_prompt:
             raise ValueError(
-                "Prompt enhancement is only available for the 'presti_v2' model."
+                "Prompt enhancement is only available for the 'presti_v2' and 'presti_v3' models."
             )
         return self
 
