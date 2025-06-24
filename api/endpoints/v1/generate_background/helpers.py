@@ -121,7 +121,17 @@ def preprocess(
 ) -> tuple[dict, str, str]:
     # Prepare the control image
     control_image = Image.new("RGBA", (width, height))
-    alpha_channel = packshot_image.split()[3]
+
+    # Check if the image has an alpha channel
+    try:
+        alpha_channel = packshot_image.split()[3]
+    except IndexError:
+        # Image doesn't have an alpha channel, raise an appropriate error
+        raise HTTPException(
+            status_code=400,
+            detail="Product image must have a transparent background (alpha channel). Please upload a PNG image with transparency or ensure your image has an alpha channel.",
+        )
+
     if request.model in ["presti_v2", "presti_v3"]:
         # For Flux models, we convert to a binary mask to avoid the appearance of an edge, it is very visible on
         # low-res packshots (https://presti-ai.slack.com/archives/C077N5HF9BP/p1738139806501099)
