@@ -14,14 +14,8 @@ engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
     client_encoding="utf8",
     poolclass=QueuePool,
-    pool_size=10,  # Number of connections to maintain in the pool
-    max_overflow=20,  # Additional connections that can be created on demand
     pool_pre_ping=True,  # Verify connections before use (prevents stale connections)
     pool_recycle=3600,  # Recycle connections after 1 hour
-    connect_args={
-        "connect_timeout": 10,  # Connection timeout in seconds
-        "server_side_cursors": True,  # Better for large result sets
-    }
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
