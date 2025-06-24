@@ -10,8 +10,8 @@ def create_generation(generation: Generation, db: Session = next(get_db())):
     db.add(generation)
     try:
         db.commit()
+        db.refresh(generation)
     except Exception as e:
         db.rollback()
         raise e
-    db.refresh(generation)
     return generation
