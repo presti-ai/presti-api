@@ -1,7 +1,8 @@
 from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-
+from decouple import config
+import sentry_sdk
 
 from fastapi.exceptions import RequestValidationError
 from api.deps.auth import get_user
@@ -35,6 +36,24 @@ You will need your **API key** in order to make requests to this API. To get you
 
 Make sure you never share your API key with anyone, and you never commit it to a public repository. Include this key in the `Authorization` header of your requests.
 """
+
+SENTRY_DSN = config("SENTRY_DSN", cast=str)
+sentry_sdk.init(
+    dsn=SENTRY_DSN,
+    # Add data like request headers and IP for users, if applicable;
+    # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
+    send_default_pii=True,
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for tracing.
+    traces_sample_rate=1.0,
+    # To collect profiles for all profile sessions,
+    # set `profile_session_sample_rate` to 1.0.
+    profile_session_sample_rate=1.0,
+    # Profiles will be automatically collected while
+    # there is an active span.
+    profile_lifecycle="trace",
+)
+
 
 app = FastAPI(
     title="Presti AI API",
