@@ -5,9 +5,11 @@ import time
 import uuid
 import asyncio
 from fastapi import APIRouter, Depends, HTTPException
+from sqlmodel import Session
 from api.models.generation_models import Generation
 from api.services.generation_service import create_generation
 from api.utils.runpod import call_runpod_endpoint
+from database.connection import get_db
 from .helpers import postprocess, preprocess
 from api.utils.constants import ALLOWED_DIMENSIONS, OUTPAINT_MODELS_URL
 import api.utils.image as image_utils
@@ -101,6 +103,7 @@ curl -X POST 'https://sdk.presti.ai/v1/generate_background' \\
 async def generate_background(
     request: GenerateBackgroundRequest,
     user: User = Depends(get_user),
+    db: Session = Depends(get_db),
 ):
     """
     Generate a background scene for a product image.
@@ -195,7 +198,7 @@ async def generate_background(
         model=request.model,
         execution_time_ms=int((time.time() - t0) * 1000),
     )
-    generation = create_generation(generation)
+    generation = create_generation(generation, db)
 
     # Convert final image to base64 for the response
     final_base64_image = image_utils.image_to_base64_string(processed_generation_image)

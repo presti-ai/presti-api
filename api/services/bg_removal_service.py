@@ -1,14 +1,13 @@
 from sqlmodel import Session
-from database.connection import get_db
 from api.models.bg_removal_models import BackgroundRemoval
 
 
-def create_bg_removal(removal: BackgroundRemoval, db: Session = next(get_db())):
+def create_bg_removal(removal: BackgroundRemoval, db: Session):
     """
     Create a new background removal record in the database.
     """
-    db.add(removal)
     try:
+        db.add(removal)
         db.commit()
         db.refresh(removal)
     except Exception as e:

@@ -3,11 +3,13 @@ import io
 import time
 from PIL import Image, UnidentifiedImageError
 from fastapi import APIRouter, Depends, HTTPException
+from sqlmodel import Session
 
 from api.deps.auth import get_user
 from api.models.bg_removal_models import BackgroundRemoval
 from api.models.user_models import User
 from api.services.bg_removal_service import create_bg_removal
+from database.connection import get_db
 import api.utils.image as image_utils
 from .helpers import remove_background_helper
 from .schema import RemoveBackgroundRequest, RemoveBackgroundResponse, ErrorResponse
@@ -90,7 +92,11 @@ curl -X POST 'https://sdk.presti.ai/v1/remove_background' \\
         ]
     },
 )
-def remove_background(request: RemoveBackgroundRequest, user: User = Depends(get_user)):
+def remove_background(
+    request: RemoveBackgroundRequest,
+    user: User = Depends(get_user),
+    db: Session = Depends(get_db),
+):
     """
     Remove the background from an image, isolating the main subject.
 
@@ -125,6 +131,6 @@ def remove_background(request: RemoveBackgroundRequest, user: User = Depends(get
         user_id=user.id,
         execution_time_ms=int((time.time() - t0) * 1000),
     )
-    create_bg_removal(db_obj)
+    create_bg_removal(db_obj, db)
 
     return RemoveBackgroundResponse(image=base64_image)
