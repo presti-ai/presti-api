@@ -6,6 +6,16 @@ from api.endpoints.v1.remove_background.helpers import remove_background_helper
 # TODO: Import necessary image processing utilities
 
 
+def crop_to_content(image: Image.Image) -> Image.Image:
+    # Crop out fully transparent borders
+    if image.mode != "RGBA":
+        image = image.convert("RGBA")
+    bbox = image.getbbox()
+    if bbox:
+        return image.crop(bbox)
+    return image
+
+
 def preprocess_image(
     image_b64: str,
     margin: Union[float, Dict[str, float]],
@@ -15,7 +25,7 @@ def preprocess_image(
     target_h: int,
 ) -> str:
     """
-    Process the image by removing background, adding margins, aligning, and resizing/canvas.
+    Process the image by removing background, cropping, adding margins, aligning, and resizing/canvas.
     Returns the processed image as base64.
     """
     # 1. Convert base64 to PIL Image
@@ -25,6 +35,9 @@ def preprocess_image(
 
     # 2. Remove background
     no_bg_image = remove_background_helper(input_image)
+
+    # 2b. Crop to content (remove transparent borders)
+    no_bg_image = crop_to_content(no_bg_image)
 
     # 3. Add margins
     if isinstance(margin, float) or isinstance(margin, int):
