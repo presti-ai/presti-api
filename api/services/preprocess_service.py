@@ -39,7 +39,7 @@ def preprocess_image(
     # 2b. Crop to content (remove transparent borders)
     no_bg_image = crop_to_content(no_bg_image)
 
-    # 3. Add margins
+    # 3. Calculate margins
     if isinstance(margin, float) or isinstance(margin, int):
         margin_dict = {k: margin for k in ["left", "right", "top", "bottom"]}
     else:
@@ -70,33 +70,45 @@ def preprocess_image(
         else int(margin_dict["bottom"])
     )
 
-    new_width = width + left + right
-    new_height = height + top + bottom
-    image_with_margin = Image.new("RGBA", (new_width, new_height), (0, 0, 0, 0))
-    image_with_margin.paste(no_bg_image, (left, top))
+    # 4. Calculate available space for the image after margins
+    available_width = target_w - left - right
+    available_height = target_h - top - bottom
 
-    # 4. Place on target canvas with alignment
+    # 5. Calculate scale factor to fit image within available space
+    scale_x = available_width / width if available_width > 0 else 1
+    scale_y = available_height / height if available_height > 0 else 1
+    scale = min(scale_x, scale_y)  # Use the smaller scale to maintain aspect ratio
+
+    # 6. Resize the image to fit within available space
+    new_width = int(width * scale)
+    new_height = int(height * scale)
+    resized_image = no_bg_image.resize(
+        (new_width, new_height), Image.Resampling.LANCZOS
+    )
+
+    # 7. Place on target canvas with alignment
     canvas = Image.new("RGBA", (target_w, target_h), (0, 0, 0, 0))
-    paste_w, paste_h = image_with_margin.size
-    # Horizontal alignment
-    if h_align == "left":
-        x = 0
-    elif h_align == "center":
-        x = (target_w - paste_w) // 2
-    elif h_align == "right":
-        x = target_w - paste_w
-    else:
-        x = 0
-    # Vertical alignment
-    if v_align == "top":
-        y = 0
-    elif v_align == "center":
-        y = (target_h - paste_h) // 2
-    elif v_align == "bottom":
-        y = target_h - paste_h
-    else:
-        y = 0
-    canvas.paste(image_with_margin, (x, y), image_with_margin)
 
-    # 5. Return as base64
+    # Calculate position based on alignment
+    if h_align == "left":
+        x = left
+    elif h_align == "center":
+        x = left + (available_width - new_width) // 2
+    elif h_align == "right":
+        x = target_w - right - new_width
+    else:
+        x = left
+
+    if v_align == "top":
+        y = top
+    elif v_align == "center":
+        y = top + (available_height - new_height) // 2
+    elif v_align == "bottom":
+        y = target_h - bottom - new_height
+    else:
+        y = top
+
+    canvas.paste(resized_image, (x, y), resized_image)
+
+    # 8. Return as base64
     return image_utils.image_to_base64_string(canvas)
