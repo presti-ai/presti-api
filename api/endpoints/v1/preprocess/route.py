@@ -46,7 +46,7 @@ def is_valid_dimension(width, height):
         500: {"description": "Internal server error"},
     },
     openapi_extra={
-        "summary": "Preprocess an image by removing background, adding margins, and aligning on a target canvas",
+        "summary": "Preprocess",
         "description": """
 ## Overview
 This endpoint preprocesses an image by:
