@@ -1,6 +1,15 @@
-from fastapi import APIRouter, HTTPException
+import time
+from fastapi import APIRouter, HTTPException, Depends
+from sqlmodel import Session
 from .schema import PreprocessRequest, PreprocessResponse
-from api.services.preprocess_service import preprocess_image as preprocess_service_image
+from api.services.preprocess_service import (
+    preprocess_image as preprocess_service_image,
+    create_preprocess,
+)
+from api.deps.auth import get_user
+from api.models.user_models import User
+from api.models.preprocess_models import Preprocess
+from database.connection import get_db
 
 router = APIRouter()
 
@@ -153,7 +162,11 @@ curl -X POST 'https://sdk.presti.ai/v1/preprocess' \\
         ],
     },
 )
-def preprocess_image(request: PreprocessRequest):
+def preprocess_image(
+    request: PreprocessRequest,
+    user: User = Depends(get_user),
+    db: Session = Depends(get_db),
+):
     """
     Preprocess an image by removing background, adding margins, and aligning on a target canvas.
 
@@ -165,6 +178,8 @@ def preprocess_image(request: PreprocessRequest):
     5. Align the image according to the specified parameters
     6. Return the result as a base64 encoded image
     """
+    t0 = time.time()
+
     if not is_valid_dimension(request.target_width, request.target_height):
         raise HTTPException(
             status_code=400,
@@ -179,4 +194,23 @@ def preprocess_image(request: PreprocessRequest):
         request.target_width,
         request.target_height,
     )
+
+    # Normalize margin for JSON storage
+    if isinstance(request.margin, (int, float)):
+        margin_json = {"percentage": float(request.margin)}
+    else:
+        margin_json = dict(request.margin)
+
+    # Create preprocess record
+    db_obj = Preprocess(
+        user_id=user.id,
+        execution_time_ms=int((time.time() - t0) * 1000),
+        margin=margin_json,
+        horizontal_alignment=request.horizontal_alignment,
+        vertical_alignment=request.vertical_alignment,
+        target_width=request.target_width,
+        target_height=request.target_height,
+    )
+    create_preprocess(db_obj, db)
+
     return PreprocessResponse(image=result_b64)

@@ -1,9 +1,25 @@
 from typing import Union, Dict
 from PIL import Image
+from sqlmodel import Session
 import api.utils.image as image_utils
 from api.endpoints.v1.remove_background.helpers import remove_background_helper
+from api.models.preprocess_models import Preprocess
 
 # TODO: Import necessary image processing utilities
+
+
+def create_preprocess(preprocess: Preprocess, db: Session):
+    """
+    Create a new preprocess record in the database.
+    """
+    try:
+        db.add(preprocess)
+        db.commit()
+        db.refresh(preprocess)
+    except Exception as e:
+        db.rollback()
+        raise e
+    return preprocess
 
 
 def crop_to_content(image: Image.Image) -> Image.Image:
